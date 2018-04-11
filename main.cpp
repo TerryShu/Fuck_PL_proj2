@@ -190,11 +190,12 @@ string ReadOPAndComment() {
 
   if ( peekChar == '(' || peekChar == ')' || peekChar == '[' || peekChar == ']' ||
        peekChar == '{' || peekChar == '}' || peekChar == ';' || peekChar == ',' ||
-       peekChar == '?' || peekChar == ';' ) {
+       peekChar == '?' || peekChar == ':' ) {
     aChar = cin.get() ;
     token = token + aChar ;
   } // if
-  else if ( peekChar == '+' || peekChar == '-' ) {
+  else if ( peekChar == '+' || peekChar == '-' || peekChar == '*' ||
+            peekChar == '/' || peekChar == '%' || peekChar == '^' ) {
     aChar = cin.get() ;
     token = token + aChar ;
     peekChar = cin.peek() ;
@@ -214,10 +215,8 @@ string ReadOPAndComment() {
       } // else if --
 
     } // if
-    else if ( aChar == '*' || aChar == '/' || aChar == '%' ) {
-      aChar = cin.get() ;
-      token = token + aChar ;
-      peekChar = cin.peek() ;
+    else if ( aChar == '*' || aChar == '/' || aChar == '%' || aChar == '^' ) {
+
       if ( peekChar == '=' ) {
         aChar = cin.get() ;
         token = token + aChar ;
@@ -227,9 +226,10 @@ string ReadOPAndComment() {
         cin.getline( comment , 500 ) ;
         token = GetToken() ;
       } // else if comment
+
     } // else if
   } // else if
-  else if ( peekChar == '>' || peekChar == '<' || peekChar == '=' ) {
+  else if ( peekChar == '>' || peekChar == '<' || peekChar == '=' || peekChar == '!' ) {
     aChar = cin.get() ;
     token = token + aChar ;
     peekChar = cin.peek() ;
@@ -247,10 +247,20 @@ string ReadOPAndComment() {
     } // else if <<
 
   } // else if
-  else {
-    cout << "READ " ;
-    throw  ERROR ;
-  } // else
+  else if ( peekChar == '&' || peekChar == '|' ) {
+    aChar = cin.get() ;
+    token = token + aChar ;
+    peekChar = cin.peek() ;
+    if ( aChar == '&' && peekChar == '&' ) {
+      aChar = cin.get() ;
+      token = token + aChar ;
+    } // if
+    else if ( aChar == '|' && peekChar == '|' ) {
+      aChar = cin.get() ;
+      token = token + aChar ;
+    } // else if
+
+  } // else if
 
   return token ;
 } // ReadOPAndComment()
