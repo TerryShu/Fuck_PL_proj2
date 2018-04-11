@@ -43,17 +43,16 @@ void TakeToken() ;
 void ReadAfterError() ;
 // ===============================================================
 
-int main()
-{
-    if ( gNowToken != "quit1" ) {
+int main() {
+    while ( gNowToken != "quit1" ) {
       gNowToken.clear() ;
-      gNowToken == GetToken() ;
+      gNowToken = GetToken() ;
       cout << gNowToken << endl ;
     } // if
 
 
     return 0;
-}
+} // main()
 
 string GetToken() {
 
@@ -64,8 +63,7 @@ string GetToken() {
   peekChar = cin.peek() ;
   if ( isalnum( peekChar ) || peekChar == '_' || peekChar == '.'
        || peekChar == '\'' || peekChar == '"' ) {
-
-    if ( isdigit( peekChar ) || peekChar == '.' ) {
+    if ( isdigit( peekChar ) || peekChar == '.' || peekChar == '\'' || peekChar == '"' ) {
       token = ReadConstant() ;
     } // if
     else {
@@ -73,18 +71,21 @@ string GetToken() {
     } // else
 
   } // if
-  else if ( peekChar == '+' || peekChar == '-' || peekChar == '*' ||
-            peekChar == '/' || peekChar == '*' || peekChar == '/' ||
-            peekChar == ';' || peekChar == '>' || peekChar == '<' ||
-            peekChar == '(' || peekChar == ')' ) {
+  else if ( peekChar == '(' || peekChar == ')' || peekChar == '[' || peekChar == ']' ||
+            peekChar == '{' || peekChar == '}' || peekChar == '+' || peekChar == '-' ||
+            peekChar == '*' || peekChar == '/' || peekChar == '%' || peekChar == '^' ||
+            peekChar == '>' || peekChar == '<' || peekChar == '!' || peekChar == '&' ||
+            peekChar == '|' || peekChar == '=' || peekChar == ';' || peekChar == ',' ||
+            peekChar == '?' || peekChar == ':' ) {
     token = ReadOPAndComment() ;
   } // else if
   else {
-    if ( !isalnum( peekChar ) && peekChar != '_' && peekChar != '+' &&
-         peekChar != '-' && peekChar != '*' && peekChar != '/' &&
-         peekChar != ';' && peekChar != '>' && peekChar != '<' &&
-         peekChar != ':' && peekChar != '(' && peekChar != ')' &&
-         peekChar != '.' && peekChar != '=' ) {
+    if ( !isalnum( peekChar ) && peekChar != '_' && peekChar != '(' && peekChar != ')' &&
+            peekChar != '{' && peekChar != '}' && peekChar != '+' && peekChar != '-' &&
+            peekChar != '*' && peekChar != '/' && peekChar != '%' && peekChar != '^' &&
+            peekChar != '>' && peekChar != '<' && peekChar != '!' && peekChar != '&' &&
+            peekChar != '|' && peekChar != '=' && peekChar != ';' && peekChar != ',' &&
+            peekChar != '?' && peekChar != ':' && peekChar != '[' && peekChar != ']' ) {
       gUnknowChar = peekChar ;
       throw UNRECOGNIZED ;
     } // if all possibly start
@@ -144,6 +145,8 @@ string ReadConstant() {
       peekChar = cin.peek() ;
     } // while
 
+    aChar = cin.get() ; // read '
+    token = token + aChar ;
   }  // else if
   else if ( peekChar == '"' ) {
     aChar = cin.get() ; // read "
@@ -154,10 +157,13 @@ string ReadConstant() {
       token = token + aChar ;
       peekChar = cin.peek() ;
     } // while
+
+    aChar = cin.get() ; // read '
+    token = token + aChar ;
   }  // else if
 
   return token ;
-} // ReadNum()
+} // ReadConstant()
 
 string ReadIdent() {
   char aChar ;
@@ -182,61 +188,71 @@ string ReadOPAndComment() {
   token.clear() ;
   peekChar = cin.peek() ;
 
-  if ( peekChar == '+' || peekChar == '-' || peekChar == '*' || peekChar == '(' ||
-       peekChar == ')' || peekChar == ';' || peekChar == '=' ) {
+  if ( peekChar == '(' || peekChar == ')' || peekChar == '[' || peekChar == ']' ||
+       peekChar == '{' || peekChar == '}' || peekChar == ';' || peekChar == ',' ||
+       peekChar == '?' || peekChar == ';' ) {
     aChar = cin.get() ;
     token = token + aChar ;
-    return token ;
   } // if
-  else if ( peekChar == '/' ) {
+  else if ( peekChar == '+' || peekChar == '-' ) {
     aChar = cin.get() ;
     token = token + aChar ;
     peekChar = cin.peek() ;
-    if ( peekChar == '/' ) {
-      char comment[500] ;
-      cin.getline( comment, 500 ) ;
-      token = GetToken() ;
-    } // if comment
+    if ( aChar == '+' || aChar == '-' ) {
 
-    return token ;
+      if ( peekChar == '=' ) {
+        aChar = cin.get() ;
+        token = token + aChar ;
+      } // if += -+
+      else if ( aChar == '+' && peekChar == '+' ) {
+        aChar = cin.get() ;
+        token = token + aChar ;
+      } // else if ++
+      else if ( aChar == '-' && peekChar == '-' ) {
+        aChar = cin.get() ;
+        token = token + aChar ;
+      } // else if --
+
+    } // if
+    else if ( aChar == '*' || aChar == '/' || aChar == '%' ) {
+      aChar = cin.get() ;
+      token = token + aChar ;
+      peekChar = cin.peek() ;
+      if ( peekChar == '=' ) {
+        aChar = cin.get() ;
+        token = token + aChar ;
+      } // if
+      else if ( aChar == '/' && peekChar == '/' ) {
+        char comment[500] ;
+        cin.getline( comment , 500 ) ;
+        token = GetToken() ;
+      } // else if comment
+    } // else if
   } // else if
-  else if ( peekChar == ':' ) {
+  else if ( peekChar == '>' || peekChar == '<' || peekChar == '=' ) {
     aChar = cin.get() ;
     token = token + aChar ;
     peekChar = cin.peek() ;
     if ( peekChar == '=' ) {
       aChar = cin.get() ;
       token = token + aChar ;
-    } // if
+    } // if >= <= ==
+    else if ( aChar == '>' && peekChar == '>' ) {
+      aChar = cin.get() ;
+      token = token + aChar ;
+    } // else if >>
+    else if ( aChar == '<' && peekChar == '<' ) {
+      aChar = cin.get() ;
+      token = token + aChar ;
+    } // else if <<
 
-    return token ;
-  } // else if
-  else if ( peekChar == '>' || peekChar == '<' ) {
-    aChar = cin.get() ;
-    token = token + aChar ;
-    if ( aChar == '>' ) {
-      peekChar = cin.peek() ;
-      if ( peekChar == '=' ) {
-        aChar = cin.get() ;
-        token = token + aChar ;
-      } // if
-    } // if
-    else if ( aChar == '<' ) {
-      peekChar = cin.peek() ;
-      if ( peekChar == '=' || peekChar == '>' ) {
-        aChar = cin.get() ;
-        token = token + aChar ;
-      } // if
-    } // else if
-
-    return token ;
   } // else if
   else {
     cout << "READ " ;
     throw  ERROR ;
   } // else
 
-
+  return token ;
 } // ReadOPAndComment()
 
 void SkipExitChar() {
