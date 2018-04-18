@@ -32,6 +32,7 @@ bool gIsFloat = false ;
 char gUnknowChar ;
 // ===============================================================
 
+void InitializeState() ;
 // =======================use for get token=======================
 string GetToken() ;
 void SkipExitChar() ;
@@ -310,7 +311,6 @@ void InitializeToken() {
 
 void InitializeState() {
   gNowToken.clear() ;
-  gPeekToken.clear() ;
   gBoolAns.clear() ;
   gIsFloat = false ;
   gQuit = false ;
@@ -318,6 +318,10 @@ void InitializeState() {
   gChange = false ;
   gUnknowChar = '\0' ;
 } // InitializeState()
+
+void TakeToken() {
+  gNowToken.clear() ;
+} // TakeToken()
 
 void SkipExitChar() {
   char aChar ;
@@ -444,7 +448,7 @@ bool JudgeConstant( string Token ) {
 bool JudgeStatment( string Token ) {
   if ( Token == ";" || Token == "return" || Token == "if" || Token == "while" ||
        Token == "do" || Token == "{" || Token == "++" || Token == "--" ||
-       JudgeIDENT( Token ) || Token == "+" || Token == "-" || Token == '!' ||
+       JudgeIDENT( Token ) || Token == "+" || Token == "-" || Token == "!" ||
        JudgeConstant( Token ) ) {
     return true ;
   } // if
@@ -512,7 +516,9 @@ void Statement() {
 } // Statement()
 
 void Function_definition_without_ID() {
+  cout << "IS DEF" ;
 } // Function_definition_without_ID()
 
 void Function_definition_or_declarators() {
+  cout << "IS DEF" ;
 } // Function_definition_or_declarators()
