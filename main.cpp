@@ -38,20 +38,50 @@ void SkipExitChar() ;
 string ReadConstant() ;
 string ReadIdent() ;
 string ReadOPAndComment() ;
-bool IsFloat() ;
 void TakeToken() ;
 void ReadAfterError() ;
+// =======================Judge Token============================
+bool JudgeTypeSpec( string token ) ;
+bool JudgeIDENT( string Token ) ;
+bool JudgeNum( string Token ) ;
+bool JudgeFloat( string Token ) ;
+bool JudgeInt( string Token ) ;
+bool JudgeConstant( string Token ) ;
 // ===============================================================
 
+// =======================Recursive===============================
+void User_input() ;
+void Definition() ;
+void Statement() ;
+void Function_definition_without_ID() ;
+void Function_definition_or_declarators() ;
+// ===============================================================
+
+
 int main() {
-    while ( gNowToken != "quit1" ) {
-      gNowToken.clear() ;
-      gNowToken = GetToken() ;
-      cout << gNowToken << endl ;
-    } // if
+  while ( !gQuit ) {
+    InitializeState() ;
+    try {
+      User_input() ;
+    } // try
+    catch ( Error_type error ) {
+      ReadAfterError() ;
+      if ( error == UNRECOGNIZED ) {
+        cout << "Unrecognized token with first char : '" << gUnknowChar << "'" << endl ;
+      } // if
+      else if ( error == UNDEFINED ) {
+        cout << "Undefined identifier : '" << gNowToken << "'" << endl ;
+      } // else if
+      else if ( error == UNEXPECTED ) {
+        cout << "Unexpected token : '" << gNowToken << "'" << endl ;
+      } // else if
+      else if ( error == ERROR ) {
+        cout << "Error" << endl ;
+        return 0 ;
+      } // else if
+    } // catch
+  } // while
 
-
-    return 0;
 } // main()
 
 string GetToken() {
@@ -265,6 +295,30 @@ string ReadOPAndComment() {
   return token ;
 } // ReadOPAndComment()
 
+void ReadAfterError() {
+  char aChar ;
+  aChar = cin.peek() ;
+  while ( aChar != '\n' ) {
+    aChar = cin.get() ;
+    aChar = cin.peek() ;
+  } // while
+} // ReadAfterError()
+
+void InitializeToken() {
+  gNowToken.clear() ;
+} // InitializeToken()
+
+void InitializeState() {
+  gNowToken.clear() ;
+  gPeekToken.clear() ;
+  gBoolAns.clear() ;
+  gIsFloat = false ;
+  gQuit = false ;
+  gIsBoolOP = false ;
+  gChange = false ;
+  gUnknowChar = '\0' ;
+} // InitializeState()
+
 void SkipExitChar() {
   char aChar ;
   char exitChar ;
@@ -284,3 +338,181 @@ void SkipExitChar() {
 
 } // SkipExitChar()
 
+bool JudgeIDENT( string Token ) {
+  int length = Token.length() ;
+  int correct = 0 ;
+
+  if ( Token == "int" || Token == "float" || Token == "char" ||
+       Token == "bool" || Token == "string" || Token == "void" ||
+       Token == "if" || Token == "else" || Token == "while" ||
+       Token == "do" || Token == "return" || Token == "true" || Token == "false" ) {
+    return false ;
+  } // if
+
+  if ( isalpha( Token.at( 0 ) ) || Token.at( 0 ) == '_' ) {
+    correct++ ;
+  } // if a~z||A~Z|| _
+
+  for ( int i = 1 ; i < length ; i++ ) {
+    if ( isalnum( Token.at( i ) ) || Token.at( i ) == '_' ) {
+      correct++ ;
+    } // if  a~z || A~Z || 0~9 || _
+  } // for
+
+  if ( correct == length ) return true ;
+
+  return false ;
+
+} // JudgeIDENT()
+
+bool JudgeNum( string Token ) {
+  if ( JudgeFloat( Token ) || JudgeInt( Token ) ) {
+    return true ;
+  } // if
+
+  return false ;
+} // JudgeNum()
+
+bool JudgeInt( string Token ) {
+  int length = Token.length() ;
+  int correct = 0 ;
+  for ( int i = 0 ; i < length ; i++ ) {
+    if ( Token.at( i ) >= '0' && Token.at( i ) <= '9' ) {
+      correct++ ;
+    } // if  0~9
+  } // for
+
+  if ( correct == length ) return true ;
+
+  return false ;
+} // JudgeInt()
+
+bool JudgeFloat( string Token ) {
+  int length = Token.length() ;
+  int correct = 0 ;
+  bool find_point = false ;
+
+  if ( Token == "." ) {
+    return false ;
+  } // if just one point '.'
+
+  for ( int i = 0 ; i < length ; i++ ) {
+    if ( Token.at( i ) >= '0' && Token.at( i ) <= '9' ) {
+      correct++ ;
+    } // if  0~9
+    else if ( Token.at( i ) == '.' && !find_point ) {
+      correct++ ;
+      find_point = true ;
+    } // else if judge 123.111 && .2 && 2. should take care
+  } // for
+
+  if ( correct == length && find_point ) return true ;
+
+  return false ;
+} // JudgeFloat()
+
+bool JudgeTypeSpec( string Token ) {
+
+  if ( Token == "int" || Token == "float" || Token == "char" ||
+       Token == "bool" || Token == "string" ) {
+    return true ;
+  } // if
+
+} // JudgeTypeSpec()
+
+bool JudgeConstant( string Token ) {
+  char first_char = Token[0] ;
+  char last_char = Token[ ( Token.length() - 1 ) ] ;
+
+  if ( JudgeNum( Token ) ) {
+    return true ;
+  } // if
+  else if ( ( first_char == '\'' && last_char == '\'' ) || ( first_char == '"' && last_char == '"' ) ) {
+    return true ;
+  } // else if 'aaa' "aaa"
+  else if ( Token == "true" || Token == "false" ) {
+    return true ;
+  } // else if
+  else {
+    return false ;
+  } // else
+
+  return false ;
+
+} // JudgeConstant()
+
+bool JudgeStatment( string Token ) {
+  if ( Token == ";" || Token == "return" || Token == "if" || Token == "while" ||
+       Token == "do" || Token == "{" || Token == "++" || Token == "--" ||
+       JudgeIDENT( Token ) || Token == "+" || Token == "-" || Token == '!' ||
+       JudgeConstant( Token ) ) {
+    return true ;
+  } // if
+
+  return false ;
+
+} // JudgeStatment()
+
+void User_input() {
+  if ( gNowToken.empty() ) {
+    gNowToken = GetToken() ;
+  } // if
+
+  if ( gNowToken == "void" || JudgeTypeSpec( gNowToken ) ) {
+    Definition() ;
+  } // if
+  else if ( JudgeStatment( gNowToken ) ) {
+    Statement() ;
+  } // else if
+  else {
+
+  } // else
+} // User_input()
+
+void Definition() {
+  string type_spec = gNowToken ;
+  string id_name ;
+  TakeToken() ; // take void || type_spec
+
+  if ( type_spec == "void" ) {
+    if ( gNowToken.empty() ) {
+      gNowToken = GetToken() ; // get IDENT
+    } // if
+
+    if ( JudgeIDENT( gNowToken ) ) {
+      id_name = gNowToken ;
+    } // if
+    else {
+      throw UNEXPECTED ;
+    } // else
+
+    Function_definition_without_ID() ;
+  } // if
+  else if ( JudgeTypeSpec( type_spec ) ){
+    if ( gNowToken.empty() ) {
+      gNowToken = GetToken() ; // get IDENT
+    } // if
+
+    if ( JudgeIDENT( gNowToken ) ) {
+      id_name = gNowToken ;
+    } // if
+    else {
+      throw UNEXPECTED ;
+    } // else
+
+    Function_definition_or_declarators() ;
+  } // else if
+  else {
+    throw UNEXPECTED ;
+  } // else
+
+} // Definition()
+
+void Statement() {
+} // Statement()
+
+void Function_definition_without_ID() {
+} // Function_definition_without_ID()
+
+void Function_definition_or_declarators() {
+} // Function_definition_or_declarators()
