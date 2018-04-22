@@ -55,6 +55,8 @@ void Definition() ;
 void Statement() ;
 void Function_definition_without_ID() ;
 void Function_definition_or_declarators() ;
+void Formal_parameter_list() ;
+void Compound_statement() ;
 // ===============================================================
 
 
@@ -418,6 +420,7 @@ bool JudgeTypeSpec( string Token ) {
     return true ;
   } // if
 
+  return false ;
 } // JudgeTypeSpec()
 
 bool JudgeConstant( string Token ) {
@@ -465,7 +468,7 @@ void User_input() {
     Statement() ;
   } // else if
   else {
-
+    throw UNEXPECTED ;
   } // else
 } // User_input()
 
@@ -481,6 +484,7 @@ void Definition() {
 
     if ( JudgeIDENT( gNowToken ) ) {
       id_name = gNowToken ;
+      TakeToken() ;
     } // if
     else {
       throw UNEXPECTED ;
@@ -495,6 +499,7 @@ void Definition() {
 
     if ( JudgeIDENT( gNowToken ) ) {
       id_name = gNowToken ;
+      TakeToken() ;
     } // if
     else {
       throw UNEXPECTED ;
@@ -509,10 +514,62 @@ void Definition() {
 } // Definition()
 
 void Statement() {
+
 } // Statement()
 
 void Function_definition_without_ID() {
+  if ( gNowToken.empty() ) {
+      gNowToken = GetToken() ; // get '('
+  } // if
+
+  if ( gNowToken == "(" ) {
+    TakeToken() ;
+    if ( gNowToken.empty() ) {
+        gNowToken = GetToken() ; // get void || type
+    } // if
+
+    if ( gNowToken == "void" || JudgeTypeSpec( gNowToken ) ) {
+      if ( gNowToken == "void" ) {
+        TakeToken() ;
+      } // if
+      else {
+        Formal_parameter_list() ;
+      } // else
+
+      if ( gNowToken.empty() ) {
+          gNowToken = GetToken() ; // get ')'
+      } // if
+
+      if ( gNowToken == ")" ) {
+        TakeToken() ; // take ")"
+      } // if
+      else {
+        throw UNEXPECTED ;
+      } // else
+
+    } // if
+    else if ( gNowToken == "(" ) {
+      TakeToken() ;
+    } // else if
+    else {
+      throw UNEXPECTED ;
+    } // else
+
+    Compound_statement() ;
+
+  } // if '(' [ VOID | formal_parameter_list ] ')' compound_statement
+  else {
+    throw UNEXPECTED ;
+  } // else
+
+
 } // Function_definition_without_ID()
 
 void Function_definition_or_declarators() {
 } // Function_definition_or_declarators()
+
+void Formal_parameter_list() {
+} // Formal_parameter_list()
+
+void Compound_statement() {
+} // Compound_statement()
