@@ -32,6 +32,7 @@ bool gIsFloat = false ;
 char gUnknowChar ;
 // ===============================================================
 
+void InitializeState() ;
 // =======================use for get token=======================
 string GetToken() ;
 void SkipExitChar() ;
@@ -312,7 +313,6 @@ void InitializeToken() {
 
 void InitializeState() {
   gNowToken.clear() ;
-  gPeekToken.clear() ;
   gBoolAns.clear() ;
   gIsFloat = false ;
   gQuit = false ;
@@ -320,6 +320,10 @@ void InitializeState() {
   gChange = false ;
   gUnknowChar = '\0' ;
 } // InitializeState()
+
+void TakeToken() {
+  gNowToken.clear() ;
+} // TakeToken()
 
 void SkipExitChar() {
   char aChar ;
@@ -447,7 +451,7 @@ bool JudgeConstant( string Token ) {
 bool JudgeStatment( string Token ) {
   if ( Token == ";" || Token == "return" || Token == "if" || Token == "while" ||
        Token == "do" || Token == "{" || Token == "++" || Token == "--" ||
-       JudgeIDENT( Token ) || Token == "+" || Token == "-" || Token == '!' ||
+       JudgeIDENT( Token ) || Token == "+" || Token == "-" || Token == "!" ||
        JudgeConstant( Token ) ) {
     return true ;
   } // if
@@ -518,54 +522,55 @@ void Statement() {
 } // Statement()
 
 void Function_definition_without_ID() {
+
+
+    throw UNEXPECTED ;
+  } // else
+  else {
+  } // if '(' [ VOID | formal_parameter_list ] ')' compound_statement
+
+    Compound_statement() ;
+    } // else
+
+      throw UNEXPECTED ;
+    else {
+    } // else if
+      TakeToken() ;
+
+    } // if
+    else if ( gNowToken == "(" ) {
+      } // else
+        throw UNEXPECTED ;
+      else {
+        TakeToken() ; // take ")"
+      if ( gNowToken == ")" ) {
+
+      } // if
   if ( gNowToken.empty() ) {
       gNowToken = GetToken() ; // get '('
   } // if
 
   if ( gNowToken == "(" ) {
-    TakeToken() ;
     if ( gNowToken.empty() ) {
         gNowToken = GetToken() ; // get void || type
+    TakeToken() ;
     } // if
 
     if ( gNowToken == "void" || JudgeTypeSpec( gNowToken ) ) {
       if ( gNowToken == "void" ) {
         TakeToken() ;
       } // if
-      else {
         Formal_parameter_list() ;
       } // else
-
-      if ( gNowToken.empty() ) {
-          gNowToken = GetToken() ; // get ')'
-      } // if
-
-      if ( gNowToken == ")" ) {
-        TakeToken() ; // take ")"
-      } // if
       else {
-        throw UNEXPECTED ;
-      } // else
 
-    } // if
-    else if ( gNowToken == "(" ) {
-      TakeToken() ;
-    } // else if
-    else {
-      throw UNEXPECTED ;
-    } // else
-
-    Compound_statement() ;
-
-  } // if '(' [ VOID | formal_parameter_list ] ')' compound_statement
-  else {
-    throw UNEXPECTED ;
-  } // else
-
-
+          gNowToken = GetToken() ; // get ')'
+      if ( gNowToken.empty() ) {
+      } // if
 } // Function_definition_without_ID()
 
 void Function_definition_or_declarators() {
+  cout << "IS DEF" ;
 } // Function_definition_or_declarators()
 
 void Formal_parameter_list() {
