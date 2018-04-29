@@ -523,54 +523,10 @@ void Statement() {
 
 void Function_definition_without_ID() {
 
-
-    throw UNEXPECTED ;
-  } // else
-  else {
-  } // if '(' [ VOID | formal_parameter_list ] ')' compound_statement
-
-    Compound_statement() ;
-    } // else
-
-      throw UNEXPECTED ;
-    else {
-    } // else if
-      TakeToken() ;
-
-    } // if
-    else if ( gNowToken == "(" ) {
-      } // else
-        throw UNEXPECTED ;
-      else {
-        TakeToken() ; // take ")"
-      if ( gNowToken == ")" ) {
-
-      } // if
-  if ( gNowToken.empty() ) {
-      gNowToken = GetToken() ; // get '('
-  } // if
-
-  if ( gNowToken == "(" ) {
-    if ( gNowToken.empty() ) {
-        gNowToken = GetToken() ; // get void || type
-    TakeToken() ;
-    } // if
-
-    if ( gNowToken == "void" || JudgeTypeSpec( gNowToken ) ) {
-      if ( gNowToken == "void" ) {
-        TakeToken() ;
-      } // if
-        Formal_parameter_list() ;
-      } // else
-      else {
-
-          gNowToken = GetToken() ; // get ')'
-      if ( gNowToken.empty() ) {
-      } // if
 } // Function_definition_without_ID()
 
 void Function_definition_or_declarators() {
-  cout << "IS DEF" ;
+
 } // Function_definition_or_declarators()
 
 void Formal_parameter_list() {
