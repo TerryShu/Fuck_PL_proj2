@@ -32,7 +32,10 @@ bool gIsFloat = false ;
 char gUnknowChar ;
 // ===============================================================
 
+// =======================Initialize==============================
 void InitializeState() ;
+// ===============================================================
+
 // =======================use for get token=======================
 string GetToken() ;
 void SkipExitChar() ;
@@ -41,7 +44,9 @@ string ReadIdent() ;
 string ReadOPAndComment() ;
 void TakeToken() ;
 void ReadAfterError() ;
-// =======================Judge Token============================
+// ===============================================================
+
+// =======================Judge Token=============================
 bool JudgeTypeSpec( string token ) ;
 bool JudgeIDENT( string Token ) ;
 bool JudgeNum( string Token ) ;
@@ -58,11 +63,15 @@ void Function_definition_without_ID() ;
 void Function_definition_or_declarators() ;
 void Formal_parameter_list() ;
 void Compound_statement() ;
+void Rest_of_declarators() ;
 // ===============================================================
 
 
 int main() {
-  while ( !gQuit ) {
+  /*int testNum ;
+  cin >> testNum ;*/
+
+  /*while ( !gQuit ) {
     InitializeState() ;
     try {
       User_input() ;
@@ -83,7 +92,29 @@ int main() {
         return 0 ;
       } // else if
     } // catch
-  } // while
+  } // while*/
+while ( !gQuit ) {
+  try {
+    Rest_of_declarators() ;
+    cout << "OK" << endl ;
+  } // try
+  catch ( Error_type error ) {
+    ReadAfterError() ;
+    if ( error == UNRECOGNIZED ) {
+      cout << "Unrecognized token with first char : '" << gUnknowChar << "'" << endl ;
+    } // if
+    else if ( error == UNDEFINED ) {
+      cout << "Undefined identifier : '" << gNowToken << "'" << endl ;
+    } // else if
+    else if ( error == UNEXPECTED ) {
+      cout << "Unexpected token : '" << gNowToken << "'" << endl ;
+    } // else if
+    else if ( error == ERROR ) {
+      cout << "Error" << endl ;
+      return 0 ;
+    } // else if
+  } // catch
+}
 
 } // main()
 
@@ -114,11 +145,11 @@ string GetToken() {
   } // else if
   else {
     if ( !isalnum( peekChar ) && peekChar != '_' && peekChar != '(' && peekChar != ')' &&
-            peekChar != '{' && peekChar != '}' && peekChar != '+' && peekChar != '-' &&
-            peekChar != '*' && peekChar != '/' && peekChar != '%' && peekChar != '^' &&
-            peekChar != '>' && peekChar != '<' && peekChar != '!' && peekChar != '&' &&
-            peekChar != '|' && peekChar != '=' && peekChar != ';' && peekChar != ',' &&
-            peekChar != '?' && peekChar != ':' && peekChar != '[' && peekChar != ']' ) {
+         peekChar != '{' && peekChar != '}' && peekChar != '+' && peekChar != '-' &&
+         peekChar != '*' && peekChar != '/' && peekChar != '%' && peekChar != '^' &&
+         peekChar != '>' && peekChar != '<' && peekChar != '!' && peekChar != '&' &&
+         peekChar != '|' && peekChar != '=' && peekChar != ';' && peekChar != ',' &&
+         peekChar != '?' && peekChar != ':' && peekChar != '[' && peekChar != ']' ) {
       gUnknowChar = peekChar ;
       throw UNRECOGNIZED ;
     } // if all possibly start
@@ -256,7 +287,7 @@ string ReadOPAndComment() {
       } // if
       else if ( aChar == '/' && peekChar == '/' ) {
         char comment[500] ;
-        cin.getline( comment , 500 ) ;
+        cin.getline( comment, 500 ) ;
         token = GetToken() ;
       } // else if comment
 
@@ -472,7 +503,7 @@ void User_input() {
     Statement() ;
   } // else if
   else {
-    throw UNEXPECTED ;
+
   } // else
 } // User_input()
 
@@ -488,22 +519,20 @@ void Definition() {
 
     if ( JudgeIDENT( gNowToken ) ) {
       id_name = gNowToken ;
-      TakeToken() ;
+      Function_definition_without_ID() ;
     } // if
     else {
       throw UNEXPECTED ;
     } // else
 
-    Function_definition_without_ID() ;
   } // if
-  else if ( JudgeTypeSpec( type_spec ) ){
+  else if ( JudgeTypeSpec( type_spec ) ) {
     if ( gNowToken.empty() ) {
       gNowToken = GetToken() ; // get IDENT
     } // if
 
     if ( JudgeIDENT( gNowToken ) ) {
       id_name = gNowToken ;
-      TakeToken() ;
     } // if
     else {
       throw UNEXPECTED ;
@@ -518,14 +547,62 @@ void Definition() {
 } // Definition()
 
 void Statement() {
-
 } // Statement()
 
 void Function_definition_without_ID() {
+  if ( gNowToken.empty() ) {
+    gNowToken = GetToken() ; // get IDENT
+  } // if
+
+  if ( gNowToken == "(" ) {
+    TakeToken() ; // take "("
+    if ( gNowToken.empty() ) {
+      gNowToken = GetToken() ; // get  [ VOID | formal_parameter_list ] ')'
+    } // if
+
+    if ( gNowToken == "void" ) {
+      TakeToken() ; // take void
+      if ( gNowToken.empty() ) {
+        gNowToken = GetToken() ; // get  ')'
+      } // if
+
+      if ( gNowToken == ")" ) {
+        TakeToken() ;
+      } // if
+      else {
+        throw UNEXPECTED ;
+      } // else
+    } // if VOID
+    else if ( JudgeTypeSpec( gNowToken ) ) {
+      Formal_parameter_list() ;
+    } // else if formal_parameter_list
+    else if ( gNowToken == ")" ) {
+      TakeToken() ; // take ")"
+    } // else if just ')'
+    else {
+      throw UNEXPECTED ;
+    } // else
+
+  } // if  '(' [ VOID | formal_parameter_list ] ')' compound_statement
+  else {
+    throw UNEXPECTED ;
+  } // else
+
+  Compound_statement() ;
 
 } // Function_definition_without_ID()
 
 void Function_definition_or_declarators() {
+  if ( gNowToken.empty() ) {
+    gNowToken = GetToken() ;
+  } // if
+
+  if ( gNowToken == "(" ) {
+    Function_definition_without_ID() ;
+  } // if function_definition_without_ID
+  else {
+    Rest_of_declarators() ;
+  } // else
 
 } // Function_definition_or_declarators()
 
@@ -534,3 +611,104 @@ void Formal_parameter_list() {
 
 void Compound_statement() {
 } // Compound_statement()
+
+void Rest_of_declarators() {
+  if ( gNowToken.empty() ) {
+    gNowToken = GetToken() ;
+  } // if
+
+  if ( gNowToken == "[" ) {
+    TakeToken() ; // take "["
+    if ( gNowToken.empty() ) {
+      gNowToken = GetToken() ; // get Constant
+    } // if
+
+    if ( JudgeConstant( gNowToken ) ) {
+      TakeToken() ; // take Constant
+      if ( gNowToken.empty() ) {
+        gNowToken = GetToken() ; // get "]"
+      } // if
+
+      if ( gNowToken == "]" ) {
+        TakeToken() ; // take "]"
+      } // if
+      else {
+        throw UNEXPECTED ;
+      } // else
+
+    } // if
+    else {
+      throw UNEXPECTED ;
+    } // else
+
+  } // if
+
+  if ( gNowToken.empty() ) {
+    gNowToken = GetToken() ;
+  } // if
+
+  if ( gNowToken == "," ) {
+    while ( gNowToken == "," ) {
+      TakeToken() ; // take ","
+      if ( gNowToken.empty() ) {
+        gNowToken = GetToken() ; // get IDENT
+      } // if
+
+      if ( JudgeIDENT( gNowToken ) ) {
+        TakeToken() ; // take IDENT
+        if ( gNowToken.empty() ) {
+          gNowToken = GetToken() ;
+        } // if
+
+        if ( gNowToken == "[" ) {
+          TakeToken() ; // take "["
+          if ( gNowToken.empty() ) {
+            gNowToken = GetToken() ; // get Constant
+          } // if
+
+          if ( JudgeConstant( gNowToken ) ) {
+            TakeToken() ; // take Constant
+            if ( gNowToken.empty() ) {
+              gNowToken = GetToken() ; // get "]"
+            } // if
+
+            if ( gNowToken == "]" ) {
+              TakeToken() ; // take "]"
+            } // if
+            else {
+              throw UNEXPECTED ;
+            } // else
+
+          } // if
+          else {
+            throw UNEXPECTED ;
+          } // else
+
+        } // if
+
+      } // if
+      else {
+        throw UNEXPECTED ;
+      } // else
+
+      if ( gNowToken.empty() ) {
+        gNowToken = GetToken() ; // get ","
+      } // if
+
+    } // while
+
+  } // if
+
+  if ( gNowToken.empty() ) {
+    gNowToken = GetToken() ; // get ";"
+  } // if
+
+  if ( gNowToken == ";" ) {
+    TakeToken() ;
+  } // if
+  else {
+    throw UNEXPECTED ;
+  } // else
+
+
+} // Rest_of_declarators()
