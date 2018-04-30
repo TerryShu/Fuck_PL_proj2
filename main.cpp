@@ -94,6 +94,7 @@ int main() {
     } // catch
   } // while*/
 while ( !gQuit ) {
+  InitializeState() ;
   try {
     Rest_of_declarators() ;
     cout << "OK" << endl ;
@@ -557,28 +558,23 @@ void Function_definition_without_ID() {
   if ( gNowToken == "(" ) {
     TakeToken() ; // take "("
     if ( gNowToken.empty() ) {
-      gNowToken = GetToken() ; // get  [ VOID | formal_parameter_list ] ')'
+      gNowToken = GetToken() ; // get  [ VOID | formal_parameter_list ]
     } // if
 
     if ( gNowToken == "void" ) {
       TakeToken() ; // take void
-      if ( gNowToken.empty() ) {
-        gNowToken = GetToken() ; // get  ')'
-      } // if
-
-      if ( gNowToken == ")" ) {
-        TakeToken() ;
-      } // if
-      else {
-        throw UNEXPECTED ;
-      } // else
     } // if VOID
     else if ( JudgeTypeSpec( gNowToken ) ) {
       Formal_parameter_list() ;
     } // else if formal_parameter_list
-    else if ( gNowToken == ")" ) {
+
+    if ( gNowToken.empty() ) {
+      gNowToken = GetToken() ; // get  ")"
+    } // if
+
+    if ( gNowToken == ")" ) {
       TakeToken() ; // take ")"
-    } // else if just ')'
+    } // if
     else {
       throw UNEXPECTED ;
     } // else
@@ -607,9 +603,154 @@ void Function_definition_or_declarators() {
 } // Function_definition_or_declarators()
 
 void Formal_parameter_list() {
+  if ( gNowToken.empty() ) {
+    gNowToken = GetToken() ; // get type_specifier
+  } // if
+
+  if ( JudgeTypeSpec( gNowToken ) ) {
+    TakeToken() ;
+    if ( gNowToken.empty() ) {
+      gNowToken = GetToken() ; // get [ '&' ] or Identifier
+    } // if
+
+    if ( gNowToken == "&" ) {
+      TakeToken() ; // take "&"
+    } //if
+
+    if ( gNowToken.empty() ) {
+      gNowToken = GetToken() ; // get [ '&' ] or Identifier
+    } // if
+
+    if ( JudgeIDENT( gNowToken ) ) {
+      TakeToken() ; // take IDENT
+    } // if
+    else {
+      throw UNEXPECTED ;
+    } // else
+
+    if ( gNowToken.empty() ) {
+      gNowToken = GetToken() ; // get [ '&' ] or Identifier
+    } // if
+
+    if ( gNowToken == "[" ) {
+      TakeToken() ;
+      if ( gNowToken.empty() ) {
+        gNowToken = GetToken() ; // get constant
+      } // if
+
+      if ( JudgeConstant( gNowToken ) ) {
+        TakeToken() ;
+        if ( gNowToken.empty() ) {
+          gNowToken = GetToken() ; // get constant
+        } // if
+
+        if ( gNowToken == "[" ) {
+          TakeToken() ;
+          gNowToken = GetToken() ; // get constant
+          if ( JudgeConstant( gNowToken ) ) {
+            TakeToken() ;
+          } // if
+          else {
+            throw UNEXPECTED ;
+          } // else
+
+          gNowToken = GetToken() ; // get "]"
+          if ( gNowToken == "]" ) {
+            TakeToken() ;
+          } // if
+          else {
+            throw UNEXPECTED ;
+          } // else
+
+        } // if
+
+        if ( gNowToken.empty() ) {
+          gNowToken = GetToken() ; // get constant
+        } // if
+
+        if ( gNowToken == "," ) {
+          while ( gNowToken == "," ) {
+            TakeToken() ;
+            gNowToken = GetToken() ; // get type
+            if ( JudgeTypeSpec( gNowToken ) ) {
+              TakeToken() ;
+            } // if
+            else {
+              throw UNEXPECTED ;
+            } // else
+
+            if ( gNowToken.empty() ) {
+              gNowToken = GetToken() ; // get constant
+            } // if
+
+            if ( gNowToken == "&" ) {
+              TakeToken() ;
+            } // if
+
+            if ( gNowToken.empty() ) {
+              gNowToken = GetToken() ; // get constant
+            } // if
+
+            if ( JudgeIDENT( gNowToken ) ) {
+              TakeToken() ; // take IDENT
+            } // if
+
+            if ( gNowToken.empty() ) {
+              gNowToken = GetToken() ; // get [ '[' Constant ']' ]
+            } // if
+
+            if ( gNowToken == "[" ) {
+              TakeToken() ;
+              gNowToken = GetToken() ; // get Constant
+              if ( JudgeConstant( gNowToken ) ) {
+                TakeToken() ; // take Constant
+              } // if
+              else {
+                throw UNEXPECTED ;
+              } // else
+
+              gNowToken = GetToken() ; // get "]"
+              if ( gNowToken == "[" ) {
+                TakeToken() ;
+              } // if
+              else {
+                throw UNEXPECTED ;
+              } // else
+
+            } // if
+
+            if ( gNowToken.empty() ) {
+              gNowToken = GetToken() ; // get ","
+            } // if
+
+          } // while
+        } //if
+
+      } // if
+      else {
+        throw UNEXPECTED ;
+      } // else
+    } // if
+
+
+  } // if
+  else {
+    throw UNEXPECTED ;
+  } // else
 } // Formal_parameter_list()
 
 void Compound_statement() {
+  if ( gNowToken.empty() ) {
+    gNowToken = GetToken() ;
+  } // if
+
+  if ( gNowToken == "{" ) {
+    TakeToken() ;
+
+  } // if
+  else {
+    throw UNEXPECTED ;
+  }
 } // Compound_statement()
 
 void Rest_of_declarators() {
