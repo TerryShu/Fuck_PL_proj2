@@ -1,16 +1,16 @@
 user_input : ( definition | statement ) { definition | statement }
 
-definition : VOID Identifier function_definition_without_ID 
-             | type_specifier Identifier function_definition_or_declarators
+definition : VOID Identifier function_definition_without_ID          ..........OK
+             | type_specifier Identifier function_definition_or_declarators   ..........OK
 
-type_specifier : INT | CHAR | FLOAT | STRING | BOOL
+type_specifier : INT | CHAR | FLOAT | STRING | BOOL    ..........OK
 
-function_definition_or_declarators  : function_definition_without_ID
-                                      | rest_of_declarators
+function_definition_or_declarators  : function_definition_without_ID  ..........OK
+                                      | rest_of_declarators  ..........OK
 
-rest_of_declarators  : [ '[' Constant ']' ] { ',' Identifier [ '[' Constant ']' ] } ';'
+rest_of_declarators  : [ '[' Constant ']' ] { ',' Identifier [ '[' Constant ']' ] } ';' ..........OK
 
-function_definition_without_ID  : '(' [ VOID | formal_parameter_list ] ')' compound_statement
+function_definition_without_ID  : '(' [ VOID | formal_parameter_list ] ')' compound_statement ..........OK
 
 formal_parameter_list : type_specifier [ '&' ] Identifier [ '[' Constant ']' ]  { ',' type_specifier [ '&' ] Identifier [ '[' Constant ']' ] }
 
@@ -101,3 +101,76 @@ unsigned_unary_exp  :   Identifier [ '(' [ actual_parameter_list ] ')' | [ '[' e
 
 
 
+%token  Identifier
+%token  Constant   // e.g., 35, 35.67, 'a', "Hi, there", true, false
+                   //       .35, 35., 0023
+%token  INT     // int
+%token  FLOAT   // float
+%token  CHAR    // char
+%token  BOOL    // bool
+%token  STRING  // string  注意全小寫！
+%token  VOID    // void
+%token  IF      // if
+%token  ELSE    // else
+%token  WHILE   // while
+%token  DO      // do
+%token  RETURN  // return
+%token  '('
+%token  ')'
+%token  '['
+%token  ']'
+%token  '{'
+%token  '}'
+%token  '+'
+%token  '-'
+%token  '*'
+%token  '/'
+%token  '%'
+%token  '^'
+%token  '>'
+%token  '<'
+%token  GE      // >= 
+%token  LE      // <= 
+%token  EQ      // == 
+%token  NEQ     // != 
+%token  '&'
+%token  '|'
+%token  '='
+%token  '!'
+%token  AND     // && 
+%token  OR      // || 
+%token  PE      // += 
+%token  ME      // -= 
+%token  TE      // *= 
+%token  DE      // /= 
+%token  RE      // %= 
+%token  EE      // ^= 
+%token  PP      // ++ 
+%token  MM      // -- 
+%token  RS      // >> 
+%token  LS      // << 
+%token  ';'
+%token  ','
+%token  '?'
+%token  ':'
+
+/* 
+ * precedence (lower ones are given higher precedence)
+ * and associativity
+ */
+
+%left   ','
+%right  '=' PE ME TE DE RE
+%right  '?'+':'
+%left   OR
+%left   AND
+%left   '|'
+%left   '^'
+%left   '&'
+%left   EQ NEQ
+%left   '<' '>' GE LE
+%left   '+' '-' '!'
+%left   '*' '/' '%'
+%right  PP MM
+
+%%  // the syntactical part in EBNF

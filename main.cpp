@@ -121,6 +121,10 @@ while ( !gQuit ) {
 
 string GetToken() {
 
+  if ( !gNowToken.empty() ) {
+    return gNowToken ;
+  } // if
+
   char aChar ;
   char peekChar ;
   SkipExitChar() ; // skip white space and other
@@ -493,9 +497,7 @@ bool JudgeStatment( string Token ) {
 } // JudgeStatment()
 
 void User_input() {
-  if ( gNowToken.empty() ) {
-    gNowToken = GetToken() ;
-  } // if
+  gNowToken = GetToken() ;
 
   if ( gNowToken == "void" || JudgeTypeSpec( gNowToken ) ) {
     Definition() ;
@@ -514,9 +516,7 @@ void Definition() {
   TakeToken() ; // take void || type_spec
 
   if ( type_spec == "void" ) {
-    if ( gNowToken.empty() ) {
-      gNowToken = GetToken() ; // get IDENT
-    } // if
+    gNowToken = GetToken() ; // get IDENT
 
     if ( JudgeIDENT( gNowToken ) ) {
       id_name = gNowToken ;
@@ -528,9 +528,7 @@ void Definition() {
 
   } // if
   else if ( JudgeTypeSpec( type_spec ) ) {
-    if ( gNowToken.empty() ) {
-      gNowToken = GetToken() ; // get IDENT
-    } // if
+    gNowToken = GetToken() ; // get IDENT
 
     if ( JudgeIDENT( gNowToken ) ) {
       id_name = gNowToken ;
@@ -551,15 +549,12 @@ void Statement() {
 } // Statement()
 
 void Function_definition_without_ID() {
-  if ( gNowToken.empty() ) {
-    gNowToken = GetToken() ; // get IDENT
-  } // if
+  gNowToken = GetToken() ; // get IDENT
 
   if ( gNowToken == "(" ) {
     TakeToken() ; // take "("
-    if ( gNowToken.empty() ) {
-      gNowToken = GetToken() ; // get  [ VOID | formal_parameter_list ]
-    } // if
+    gNowToken = GetToken() ; // get  [ VOID | formal_parameter_list ]
+
 
     if ( gNowToken == "void" ) {
       TakeToken() ; // take void
@@ -568,9 +563,9 @@ void Function_definition_without_ID() {
       Formal_parameter_list() ;
     } // else if formal_parameter_list
 
-    if ( gNowToken.empty() ) {
-      gNowToken = GetToken() ; // get  ")"
-    } // if
+
+    gNowToken = GetToken() ; // get  ")"
+
 
     if ( gNowToken == ")" ) {
       TakeToken() ; // take ")"
@@ -589,9 +584,9 @@ void Function_definition_without_ID() {
 } // Function_definition_without_ID()
 
 void Function_definition_or_declarators() {
-  if ( gNowToken.empty() ) {
-    gNowToken = GetToken() ;
-  } // if
+
+  gNowToken = GetToken() ;
+
 
   if ( gNowToken == "(" ) {
     Function_definition_without_ID() ;
@@ -603,23 +598,19 @@ void Function_definition_or_declarators() {
 } // Function_definition_or_declarators()
 
 void Formal_parameter_list() {
-  if ( gNowToken.empty() ) {
-    gNowToken = GetToken() ; // get type_specifier
-  } // if
+
+  gNowToken = GetToken() ; // get type_specifier
 
   if ( JudgeTypeSpec( gNowToken ) ) {
     TakeToken() ;
-    if ( gNowToken.empty() ) {
-      gNowToken = GetToken() ; // get [ '&' ] or Identifier
-    } // if
+
+    gNowToken = GetToken() ; // get [ '&' ] or Identifier
 
     if ( gNowToken == "&" ) {
       TakeToken() ; // take "&"
     } //if
 
-    if ( gNowToken.empty() ) {
-      gNowToken = GetToken() ; // get [ '&' ] or Identifier
-    } // if
+    gNowToken = GetToken() ; // get [ '&' ] or Identifier
 
     if ( JudgeIDENT( gNowToken ) ) {
       TakeToken() ; // take IDENT
@@ -628,21 +619,18 @@ void Formal_parameter_list() {
       throw UNEXPECTED ;
     } // else
 
-    if ( gNowToken.empty() ) {
-      gNowToken = GetToken() ; // get [ '&' ] or Identifier
-    } // if
+    gNowToken = GetToken() ; // get [ '&' ] or Identifier
+
 
     if ( gNowToken == "[" ) {
       TakeToken() ;
-      if ( gNowToken.empty() ) {
-        gNowToken = GetToken() ; // get constant
-      } // if
+
+      gNowToken = GetToken() ; // get constant
 
       if ( JudgeConstant( gNowToken ) ) {
         TakeToken() ;
-        if ( gNowToken.empty() ) {
-          gNowToken = GetToken() ; // get constant
-        } // if
+
+        gNowToken = GetToken() ; // get constant
 
         if ( gNowToken == "[" ) {
           TakeToken() ;
@@ -664,9 +652,7 @@ void Formal_parameter_list() {
 
         } // if
 
-        if ( gNowToken.empty() ) {
-          gNowToken = GetToken() ; // get constant
-        } // if
+        gNowToken = GetToken() ; // get constant
 
         if ( gNowToken == "," ) {
           while ( gNowToken == "," ) {
@@ -679,25 +665,21 @@ void Formal_parameter_list() {
               throw UNEXPECTED ;
             } // else
 
-            if ( gNowToken.empty() ) {
-              gNowToken = GetToken() ; // get constant
-            } // if
+            gNowToken = GetToken() ; // get constant
 
             if ( gNowToken == "&" ) {
               TakeToken() ;
             } // if
 
-            if ( gNowToken.empty() ) {
-              gNowToken = GetToken() ; // get constant
-            } // if
+
+            gNowToken = GetToken() ; // get constant
 
             if ( JudgeIDENT( gNowToken ) ) {
               TakeToken() ; // take IDENT
             } // if
 
-            if ( gNowToken.empty() ) {
-              gNowToken = GetToken() ; // get [ '[' Constant ']' ]
-            } // if
+
+            gNowToken = GetToken() ; // get [ '[' Constant ']' ]
 
             if ( gNowToken == "[" ) {
               TakeToken() ;
@@ -719,9 +701,7 @@ void Formal_parameter_list() {
 
             } // if
 
-            if ( gNowToken.empty() ) {
-              gNowToken = GetToken() ; // get ","
-            } // if
+            gNowToken = GetToken() ; // get ","
 
           } // while
         } //if
@@ -740,9 +720,7 @@ void Formal_parameter_list() {
 } // Formal_parameter_list()
 
 void Compound_statement() {
-  if ( gNowToken.empty() ) {
-    gNowToken = GetToken() ;
-  } // if
+  gNowToken = GetToken() ;
 
   if ( gNowToken == "{" ) {
     TakeToken() ;
@@ -754,21 +732,17 @@ void Compound_statement() {
 } // Compound_statement()
 
 void Rest_of_declarators() {
-  if ( gNowToken.empty() ) {
-    gNowToken = GetToken() ;
-  } // if
+
+  gNowToken = GetToken() ;
 
   if ( gNowToken == "[" ) {
     TakeToken() ; // take "["
-    if ( gNowToken.empty() ) {
-      gNowToken = GetToken() ; // get Constant
-    } // if
+
+    gNowToken = GetToken() ; // get Constant
 
     if ( JudgeConstant( gNowToken ) ) {
       TakeToken() ; // take Constant
-      if ( gNowToken.empty() ) {
-        gNowToken = GetToken() ; // get "]"
-      } // if
+      gNowToken = GetToken() ; // get "]"
 
       if ( gNowToken == "]" ) {
         TakeToken() ; // take "]"
@@ -784,34 +758,25 @@ void Rest_of_declarators() {
 
   } // if
 
-  if ( gNowToken.empty() ) {
-    gNowToken = GetToken() ;
-  } // if
+
+  gNowToken = GetToken() ;
 
   if ( gNowToken == "," ) {
     while ( gNowToken == "," ) {
       TakeToken() ; // take ","
-      if ( gNowToken.empty() ) {
-        gNowToken = GetToken() ; // get IDENT
-      } // if
+      gNowToken = GetToken() ; // get IDENT
 
       if ( JudgeIDENT( gNowToken ) ) {
         TakeToken() ; // take IDENT
-        if ( gNowToken.empty() ) {
-          gNowToken = GetToken() ;
-        } // if
+        gNowToken = GetToken() ;
 
         if ( gNowToken == "[" ) {
           TakeToken() ; // take "["
-          if ( gNowToken.empty() ) {
-            gNowToken = GetToken() ; // get Constant
-          } // if
+          gNowToken = GetToken() ; // get Constant
 
           if ( JudgeConstant( gNowToken ) ) {
             TakeToken() ; // take Constant
-            if ( gNowToken.empty() ) {
-              gNowToken = GetToken() ; // get "]"
-            } // if
+            gNowToken = GetToken() ; // get "]"
 
             if ( gNowToken == "]" ) {
               TakeToken() ; // take "]"
@@ -832,17 +797,14 @@ void Rest_of_declarators() {
         throw UNEXPECTED ;
       } // else
 
-      if ( gNowToken.empty() ) {
-        gNowToken = GetToken() ; // get ","
-      } // if
+      gNowToken = GetToken() ; // get ","
 
     } // while
 
   } // if
 
-  if ( gNowToken.empty() ) {
-    gNowToken = GetToken() ; // get ";"
-  } // if
+
+  gNowToken = GetToken() ; // get ";"
 
   if ( gNowToken == ";" ) {
     TakeToken() ;
@@ -850,6 +812,5 @@ void Rest_of_declarators() {
   else {
     throw UNEXPECTED ;
   } // else
-
 
 } // Rest_of_declarators()
