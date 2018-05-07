@@ -71,7 +71,7 @@ int main() {
   /*int testNum ;
   cin >> testNum ;*/
 
-  /*while ( !gQuit ) {
+  while ( !gQuit ) {
     InitializeState() ;
     try {
       User_input() ;
@@ -92,30 +92,7 @@ int main() {
         return 0 ;
       } // else if
     } // catch
-  } // while*/
-while ( !gQuit ) {
-  InitializeState() ;
-  try {
-    Rest_of_declarators() ;
-    cout << "OK" << endl ;
-  } // try
-  catch ( Error_type error ) {
-    ReadAfterError() ;
-    if ( error == UNRECOGNIZED ) {
-      cout << "Unrecognized token with first char : '" << gUnknowChar << "'" << endl ;
-    } // if
-    else if ( error == UNDEFINED ) {
-      cout << "Undefined identifier : '" << gNowToken << "'" << endl ;
-    } // else if
-    else if ( error == UNEXPECTED ) {
-      cout << "Unexpected token : '" << gNowToken << "'" << endl ;
-    } // else if
-    else if ( error == ERROR ) {
-      cout << "Error" << endl ;
-      return 0 ;
-    } // else if
-  } // catch
-}
+  } // while
 
 } // main()
 
@@ -506,8 +483,21 @@ void User_input() {
     Statement() ;
   } // else if
   else {
-
+    throw UNEXPECTED ;
   } // else
+
+  gNowToken = GetToken() ;
+  while ( gNowToken == "void" || JudgeTypeSpec( gNowToken ) || JudgeStatment( gNowToken ) ) {
+    if ( gNowToken == "void" || JudgeTypeSpec( gNowToken ) ) {
+      Definition() ;
+    } // if
+    else if ( JudgeStatment( gNowToken ) ) {
+      Statement() ;
+    } // else if
+    else {
+      throw UNEXPECTED ;
+    } // else
+  } // while
 } // User_input()
 
 void Definition() {
@@ -546,6 +536,30 @@ void Definition() {
 } // Definition()
 
 void Statement() {
+  gNowToken = GetToken() ;
+  if ( gNowToken == ";" ) {
+    TakeToken() ;
+  } // if null statement
+  else if ( gNowToken == "return" ) {
+    TakeToken() ; // take return
+  } // else if
+  else if ( gNowToken == "if" ) {
+    TakeToken() ; // take if
+  } // else if
+  else if ( gNowToken == "while" ) {
+    TakeToken() ; // take while
+  } // else if
+  else if ( gNowToken == "do" ) {
+    TakeToken() ; // take do
+  } // else if
+  else if ( gNowToken == "{" ) {
+    TakeToken() ; // take {
+    Compound_statement() ;
+  } // else if
+  else {
+    Epression() ;
+  } // else
+
 } // Statement()
 
 void Function_definition_without_ID() {
@@ -584,10 +598,7 @@ void Function_definition_without_ID() {
 } // Function_definition_without_ID()
 
 void Function_definition_or_declarators() {
-
   gNowToken = GetToken() ;
-
-
   if ( gNowToken == "(" ) {
     Function_definition_without_ID() ;
   } // if function_definition_without_ID
@@ -597,10 +608,11 @@ void Function_definition_or_declarators() {
 
 } // Function_definition_or_declarators()
 
+void Epression() {
+} // Epression()
+
 void Formal_parameter_list() {
-
   gNowToken = GetToken() ; // get type_specifier
-
   if ( JudgeTypeSpec( gNowToken ) ) {
     TakeToken() ;
 
@@ -608,7 +620,7 @@ void Formal_parameter_list() {
 
     if ( gNowToken == "&" ) {
       TakeToken() ; // take "&"
-    } //if
+    } // if
 
     gNowToken = GetToken() ; // get [ '&' ] or Identifier
 
@@ -704,7 +716,7 @@ void Formal_parameter_list() {
             gNowToken = GetToken() ; // get ","
 
           } // while
-        } //if
+        } // if
 
       } // if
       else {
@@ -721,14 +733,33 @@ void Formal_parameter_list() {
 
 void Compound_statement() {
   gNowToken = GetToken() ;
-
   if ( gNowToken == "{" ) {
     TakeToken() ;
-
   } // if
   else {
     throw UNEXPECTED ;
-  }
+  } // else
+
+  gNowToken = GetToken() ;
+  while ( gNowToken == "void" || JudgeTypeSpec( gNowToken ) || JudgeStatment( gNowToken ) ) {
+    if ( gNowToken == "void" || JudgeTypeSpec( gNowToken ) ) {
+      Definition() ;
+    } // if
+    else if ( JudgeStatment( gNowToken ) ) {
+      Statement() ;
+    } // else if
+    else {
+      throw UNEXPECTED ;
+    } // else
+
+    gNowToken = GetToken() ;
+  } // while
+
+  gNowToken = GetToken() ;
+  if ( gNowToken == "}" ) {
+    TakeToken() ; // take "}"
+  } // if
+
 } // Compound_statement()
 
 void Rest_of_declarators() {
