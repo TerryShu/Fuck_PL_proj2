@@ -64,6 +64,10 @@ void Function_definition_or_declarators() ;
 void Formal_parameter_list() ;
 void Compound_statement() ;
 void Rest_of_declarators() ;
+void Basic_expression() ;
+void Epression()
+void Rest_of_Identifier_started_basic_exp() ;
+void Rest_of_PPMM_Identifier_started_basic_exp() ;
 // ===============================================================
 
 
@@ -609,7 +613,46 @@ void Function_definition_or_declarators() {
 } // Function_definition_or_declarators()
 
 void Epression() {
+  gNowToken = GetToken() ;
+  Basic_expression() ;
 } // Epression()
+
+void Basic_expression() {
+  gNowToken = GetToken() ;
+  if ( JudgeIDENT( gNowToken ) ) {
+    TakeToken() ; // take ID
+    Rest_of_Identifier_started_basic_exp() ;
+  } // if Identifier rest_of_Identifier_started_basic_exp
+  else if ( gNowToken == "++" || gNowToken == "--" ) {
+    TakeToken() ; // take ++ or --
+    gNowToken = GetToken() ; // get IDENT
+    if ( JudgeIDENT( gNowToken ) ) {
+      TakeToken() ; // take IDENT
+      Rest_of_PPMM_Identifier_started_basic_exp() ;
+    } // if
+    else {
+      throw UNEXPECTED ;
+    } // else
+  } // else if ( PP | MM ) Identifier rest_of_PPMM_Identifier_started_basic_exp
+  else if ( gNowToken == "+" || gNowToken == "-" ) {
+    TakeToken() ; // take + or -
+    gNowToken = GetToken() ;
+    while ( gNowToken == "+" || gNowToken == "-" )
+  } // else if sign { sign } signed_unary_exp romce_and_romloe
+  else if ( JudgeConstant( gNowToken) || gNowToken == "(" ) {
+
+  } // else if ( Constant | '(' expression ')' ) romce_and_romloe
+  else {
+    throw UNEXPECTED ;
+  } // else
+} // Basic_expression()
+
+void Rest_of_Identifier_started_basic_exp() {
+
+} // Rest_of_Identifier_started_basic_exp()
+
+void Rest_of_PPMM_Identifier_started_basic_exp() {
+} // Rest_of_PPMM_Identifier_started_basic_exp()
 
 void Formal_parameter_list() {
   gNowToken = GetToken() ; // get type_specifier
