@@ -65,9 +65,17 @@ void Formal_parameter_list() ;
 void Compound_statement() ;
 void Rest_of_declarators() ;
 void Basic_expression() ;
-void Epression()
+void Expression() ;
 void Rest_of_Identifier_started_basic_exp() ;
 void Rest_of_PPMM_Identifier_started_basic_exp() ;
+void Signed_unary_exp() ;
+void Romce_and_romloe() ;
+void Actual_parameter_list() ;
+void Rest_of_maybe_logical_OR_exp() ;
+void Rest_of_maybe_logical_AND_exp() ;
+void Maybe_logical_AND_exp() ;
+void Rest_of_maybe_bit_OR_exp() ;
+void Maybe_bit_OR_exp() ;
 // ===============================================================
 
 
@@ -561,7 +569,7 @@ void Statement() {
     Compound_statement() ;
   } // else if
   else {
-    Epression() ;
+    Expression() ;
   } // else
 
 } // Statement()
@@ -612,9 +620,15 @@ void Function_definition_or_declarators() {
 
 } // Function_definition_or_declarators()
 
-void Epression() {
+void Expression() {
   gNowToken = GetToken() ;
   Basic_expression() ;
+  gNowToken = GetToken() ;
+  while ( gNowToken == "," ) {
+    TakeToken() ;
+    Basic_expression() ;
+    gNowToken = GetToken() ;
+  } // while
 } // Epression()
 
 void Basic_expression() {
@@ -634,13 +648,38 @@ void Basic_expression() {
       throw UNEXPECTED ;
     } // else
   } // else if ( PP | MM ) Identifier rest_of_PPMM_Identifier_started_basic_exp
-  else if ( gNowToken == "+" || gNowToken == "-" ) {
-    TakeToken() ; // take + or -
+  else if ( gNowToken == "+" || gNowToken == "-" || gNowToken == "!" ) {
+    TakeToken() ; // take + or - or !
     gNowToken = GetToken() ;
-    while ( gNowToken == "+" || gNowToken == "-" )
+    while ( gNowToken == "+" || gNowToken == "-" || gNowToken == "!" ) {
+      if ( gNowToken == "+" || gNowToken == "-" || gNowToken == "!" ) {
+        TakeToken() ; // take + or - or !
+      } // if
+      gNowToken = GetToken() ;
+    } // while
+    Signed_unary_exp() ;
+    Romce_and_romloe() ;
   } // else if sign { sign } signed_unary_exp romce_and_romloe
-  else if ( JudgeConstant( gNowToken) || gNowToken == "(" ) {
-
+  else if ( JudgeConstant( gNowToken ) || gNowToken == "(" ) {
+    if ( JudgeConstant( gNowToken ) ) {
+      TakeToken() ;
+    } // if
+    else if ( gNowToken == "(" ) {
+      TakeToken() ;
+      gNowToken = GetToken() ;
+      Expression() ;
+      gNowToken = GetToken() ;
+      if ( gNowToken == ")" ) {
+        TakeToken() ;
+      } // if
+      else {
+        throw UNEXPECTED ;
+      } // else
+    } // else if
+    else {
+      throw UNEXPECTED ;
+    } // else
+    Romce_and_romloe() ;
   } // else if ( Constant | '(' expression ')' ) romce_and_romloe
   else {
     throw UNEXPECTED ;
@@ -648,11 +687,231 @@ void Basic_expression() {
 } // Basic_expression()
 
 void Rest_of_Identifier_started_basic_exp() {
+  gNowToken = GetToken() ;
+  if ( gNowToken == "(" ) {
+    TakeToken() ; // take (
+    gNowToken = GetToken() ;
+    if ( JudgeIDENT( gNowToken ) || gNowToken == "++" || gNowToken == "--" || gNowToken == "+" ||
+         gNowToken == "-" || gNowToken == "!" || JudgeConstant( gNowToken ) || gNowToken == "(" ) {
+      Actual_parameter_list() ;
+    } // if
+    gNowToken = GetToken() ;
+    if ( gNowToken == ")" ) {
+      TakeToken() ; // take )
+    } // if
+    else {
+      throw UNEXPECTED ;
+    } // else
+
+    Romce_and_romloe() ;
+
+  } // if
+  else {
+    gNowToken = GetToken() ;
+    if( gNowToken == "[" ) {
+      TakeToken() ;
+      gNowToken = GetToken() ;
+      Expression() ;
+      gNowToken = GetToken() ;
+      if ( gNowToken == "]" ) {
+        TakeToken() ;
+      } // if
+      else {
+        throw UNEXPECTED ;
+      } // else
+    } // if
+
+    gNowToken = GetToken() ;
+    if ( gNowToken == "=" || gNowToken == "+=" || gNowToken == "-=" || gNowToken == "*=" || gNowToken == "/=" || gNowToken == "%=" ) {
+      TakeToken() ;
+      Basic_expression() ;
+    } // if
+    else if ( gNowToken == "++" || gNowToken == "--" ) {
+      TakeToken() ;
+      Romce_and_romloe() ;
+    } // else if
+    else {
+      Romce_and_romloe() ;
+    } // else
+  } // else
 
 } // Rest_of_Identifier_started_basic_exp()
 
 void Rest_of_PPMM_Identifier_started_basic_exp() {
+  gNowToken = GetToken() ;
+  if ( gNowToken == "[" ) {
+    TakeToken() ; // take [
+    Expression() ;
+    gNowToken = GetToken() ;
+    if ( gNowToken == "]" ) {
+      TakeToken() ; // take ]
+    } // if
+  } // if
+
+  gNowToken = GetToken() ;
+  Romce_and_romloe() ;
 } // Rest_of_PPMM_Identifier_started_basic_exp()
+
+void Signed_unary_exp() {
+  gNowToken = GetToken() ;
+  if ( JudgeIDENT( gNowToken ) ) {
+    TakeToken() ; // take IDENT
+    gNowToken = GetToken() ;
+    if ( gNowToken == "(" ) {
+      TakeToken() ; // take (
+      gNowToken = GetToken() ;
+      if ( JudgeIDENT( gNowToken ) || gNowToken == "++" || gNowToken == "--" ||
+           gNowToken == "+" || gNowToken == "-" || gNowToken == "!" ||
+           JudgeConstant( gNowToken ) || gNowToken == "(" ) {
+        Actual_parameter_list() ;
+      } // if
+      gNowToken = GetToken() ;
+      if ( gNowToken == ")" ) {
+        TakeToken() ; // take )
+      } // if
+      else {
+        throw UNEXPECTED ;
+      } // else
+    } // if
+    else if ( gNowToken == "[" ) {
+      TakeToken() ; // take "["
+      Expression() ;
+      gNowToken = GetToken() ;
+      if ( gNowToken == "]" ) {
+        TakeToken() ; // take ]
+      } // if
+      else {
+        throw UNEXPECTED ;
+      } // else
+    } // else if
+
+  } // if Identifier [ '(' [ actual_parameter_list ] ')' |'[' expression ']' ]
+  else if ( JudgeConstant( gNowToken ) ) {
+    TakeToken() ; // take Constant
+  } // else if Constant
+  else if ( gNowToken == "(" ) {
+    TakeToken() ; // take (
+    Expression() ;
+    gNowToken = GetToken() ;
+    if ( gNowToken == ")" ) {
+      TakeToken() ; // take )
+    } // if
+    else {
+      throw UNEXPECTED ;
+    } // else
+  } //else if '(' expression ')'
+
+} // signed_unary_exp()
+
+void Unsigned_unary_exp() {
+  gNowToken = GetToken() ;
+  if ( JudgeIDENT( gNowToken ) ) {
+    TakeToken() ; // take IDENT
+    gNowToken = GetToken() ;
+    if ( gNowToken == "(" ) {
+      TakeToken() ; // take (
+      gNowToken = GetToken() ;
+      if ( JudgeIDENT( gNowToken ) || gNowToken == "++" || gNowToken == "--" ||
+           gNowToken == "+" || gNowToken == "-" || gNowToken == "!" ||
+           JudgeConstant( gNowToken ) || gNowToken == "(" ) {
+        Actual_parameter_list() ;
+      } // if
+      gNowToken = GetToken() ;
+      if ( gNowToken == ")" ) {
+        TakeToken() ; // take )
+      } // if
+      else {
+        throw UNEXPECTED ;
+      } // else
+    } // if
+    else if ( gNowToken == "[" ) {
+      TakeToken() ; // take "["
+      Expression() ;
+      gNowToken = GetToken() ;
+      if ( gNowToken == "]" ) {
+        TakeToken() ; // take ]
+      } // if
+      else {
+        throw UNEXPECTED ;
+      } // else
+    } // else if
+    gNowToken = GetToken() ;
+    if ( gNowToken == "++" || gNowToken == "--" ) {
+      TakeToken() ; // take ++ or --
+    } // if
+  } // if Identifier [ '(' [ actual_parameter_list ] ')' |'[' expression ']' ] [ ( PP | MM ) ] ]
+  else if ( JudgeConstant( gNowToken ) ) {
+    TakeToken() ; // take Constant
+  } // else if Constant
+  else if ( gNowToken == "(" ) {
+    TakeToken() ; // take (
+    Expression() ;
+    gNowToken = GetToken() ;
+    if ( gNowToken == ")" ) {
+      TakeToken() ; // take )
+    } // if
+    else {
+      throw UNEXPECTED ;
+    } // else
+  } //else if '(' expression ')'
+} // unsigned_unary_exp()
+
+void Romce_and_romloe() {
+  Rest_of_maybe_logical_OR_exp() ;
+  gNowToken = GetToken() ;
+  if ( gNowToken == "?" ) {
+    TakeToken() ; // take ?
+    Basic_expression() ;
+    gNowToken = GetToken() ;
+    if ( gNowToken == ":" ) {
+      TakeToken() ; // take :
+    } // if
+    else {
+      throw UNEXPECTED ;
+    } // else
+    Basic_expression() ;
+  } // if
+  else {
+    throw UNEXPECTED ;
+  } // else
+} // Romce_and_romloe()
+
+void Rest_of_maybe_logical_OR_exp() {
+  Rest_of_maybe_logical_AND_exp() ;
+  gNowToken = GetToken() ;
+  while ( gNowToken == "||" ) {
+    TakeToken() ; // take ||
+    Maybe_logical_AND_exp() ;
+    gNowToken = GetToken() ;
+  } // while
+} // Rest_of_maybe_logical_OR_exp()
+
+void Rest_of_maybe_logical_AND_exp() {
+  Rest_of_maybe_bit_OR_exp() ;
+  gNowToken = GetToken() ;
+  while ( gNowToken == "&&" ) {
+    TakeToken() ; // take &&
+    Maybe_bit_OR_exp() ;
+  } // while { AND maybe_bit_OR_exp }
+} // Rest_of_maybe_logical_AND_exp()
+
+void Rest_of_maybe_bit_OR_exp() {
+} // Rest_of_maybe_bit_OR_exp()
+
+void Maybe_logical_AND_exp() {
+} // Maybe_logical_AND_exp()
+
+void Maybe_bit_OR_exp() {
+} // Maybe_bit_OR_exp()
+void Actual_parameter_list() {
+  Basic_expression() ;
+  gNowToken = GetToken() ;
+  while ( gNowToken == "," ) {
+    TakeToken() ; // take ","
+    Basic_expression() ;
+    gNowToken = GetToken() ;
+  } // while
+} // Actual_parameter_list()
 
 void Formal_parameter_list() {
   gNowToken = GetToken() ; // get type_specifier

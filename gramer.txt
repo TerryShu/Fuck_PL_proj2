@@ -1,42 +1,42 @@
 user_input : ( definition | statement ) { definition | statement }
 
-definition : VOID Identifier function_definition_without_ID          ..........OK
-             | type_specifier Identifier function_definition_or_declarators   ..........OK
+definition :  VOID Identifier function_definition_without_ID               ..............OK
+            | type_specifier Identifier function_definition_or_declarators ..............OK
 
-type_specifier : INT | CHAR | FLOAT | STRING | BOOL    ..........OK
+type_specifier : INT | CHAR | FLOAT | STRING | BOOL ...............OK
 
-function_definition_or_declarators  : function_definition_without_ID  ..........OK
-                                      | rest_of_declarators  ..........OK
+function_definition_or_declarators :  function_definition_without_ID  ..............OK
+                                    | rest_of_declarators  ..............OK
 
-rest_of_declarators  : [ '[' Constant ']' ] { ',' Identifier [ '[' Constant ']' ] } ';' ..........OK
+rest_of_declarators  : [ '[' Constant ']' ]  { ',' Identifier [ '[' Constant ']' ] } ';' ..............OK
 
-function_definition_without_ID  : '(' [ VOID | formal_parameter_list ] ')' compound_statement ..........OK
+function_definition_without_ID  : '(' [ VOID | formal_parameter_list ] ')' compound_statement
 
-formal_parameter_list : type_specifier [ '&' ] Identifier [ '[' Constant ']' ]  { ',' type_specifier [ '&' ] Identifier [ '[' Constant ']' ] }
+formal_parameter_list : type_specifier [ '&' ] Identifier [ '[' Constant ']' ]  { ',' type_specifier [ '&' ] Identifier [ '[' Constant ']' ] }  ..............OK
 
-compound_statement : '{' { declaration | statement } '}' 
+compound_statement : '{' { declaration | statement } '}'  ..............OK
 
-declaration : type_specifier Identifier 
+declaration : type_specifier Identifier rest_of_declarators
 
-statement :    ';'     /* the null statement */
-             | expression ';'  /* expression here should not be empty */
-             | RETURN [ expression ] ';'
-             | compound_statement
-             | IF '(' expression ')' statement [ ELSE statement ]
-             | WHILE '(' expression ')' statement
-             | DO statement WHILE '(' expression ')' ';'
+statement :   ';'     // the null statement
+            | expression ';'  /* expression here should not be empty */
+            | RETURN [ expression ] ';'
+            | compound_statement
+            | IF '(' expression ')' statement [ ELSE statement ]
+            | WHILE '(' expression ')' statement
+            | DO statement WHILE '(' expression ')' ';'
+    
+expression : basic_expression { ',' basic_expression }
 
-expression : basic_expression [ rest_of_expression ] { ',' basic_expression }
+basic_expression :  Identifier rest_of_Identifier_started_basic_exp    ..............OK
+                  | ( PP | MM ) Identifier rest_of_PPMM_Identifier_started_basic_exp  ..............OK
+                  | sign { sign } signed_unary_exp romce_and_romloe    ..............OK
+                  | ( Constant | '(' expression ')' ) romce_and_romloe    ..............OK
 
-basic_expression : Identifier rest_of_Identifier_started_basic_exp
-                   | ( PP | MM ) Identifier rest_of_PPMM_Identifier_started_basic_exp
-                   | sign { sign } signed_unary_exp romce_and_romloe
-                   | ( Constant | '(' expression ')' ) romce_and_romloe
+rest_of_Identifier_started_basic_exp : [ '[' expression ']' ] ( assignment_operator basic_expression | [ PP | MM ] romce_and_romloe  )
+                                      | '(' [ actual_parameter_list ] ')' romce_and_romloe
 
-rest_of_Identifier_started_basic_exp : [ '[' expression ']' ] ( assignment_operator basic_expression | [PP|MM] romce_and_romloe )
-                                       | '(' [ actual_parameter_list ] ')' romce_and_romloe
-
-rest_of_PPMM_Identifier_started_basic_exp : [ '[' expression ']' ] rest_of_maybe_logical_OR_exp 
+rest_of_PPMM_Identifier_started_basic_exp : [ '[' expression ']' ] romce_and_romloe 
 
 sign : '+' | '-' | '!'
 
@@ -44,8 +44,7 @@ actual_parameter_list : basic_expression { ',' basic_expression }
 
 assignment_operator : '=' | TE | DE | RE | PE | ME
 
-rest_of_maybe_conditional_exp_and_rest_of_maybe_logical_OR_exp // 即 romce_and_romloe
-    : rest_of_maybe_logical_OR_exp [ '?' basic_expression ':' basic_expression ]
+rest_of_maybe_conditional_exp_and_rest_of_maybe_logical_OR_exp (romce_and_romloe) : rest_of_maybe_logical_OR_exp [ '?' basic_expression ':' basic_expression ]
 
 rest_of_maybe_logical_OR_exp : rest_of_maybe_logical_AND_exp { OR maybe_logical_AND_exp }
 
@@ -65,13 +64,13 @@ maybe_bit_AND_exp : maybe_equality_exp { '&' maybe_equality_exp }
 
 rest_of_maybe_bit_AND_exp : rest_of_maybe_equality_exp { '&' maybe_equality_exp }
 
-maybe_equality_exp : maybe_relational_exp { ( EQ | NEQ ) maybe_relational_exp}
+maybe_equality_exp : maybe_relational_exp { ( EQ | NEQ ) maybe_relational_exp }
 
 rest_of_maybe_equality_exp : rest_of_maybe_relational_exp { ( EQ | NEQ ) maybe_relational_exp }
 
 maybe_relational_exp : maybe_shift_exp { ( '<' | '>' | LE | GE ) maybe_shift_exp }
 
-rest_of_maybe_relational_exp : rest_of_maybe_shift_exp  { ( '<' | '>' | LE | GE ) maybe_shift_exp }
+rest_of_maybe_relational_exp : rest_of_maybe_shift_exp { ( '<' | '>' | LE | GE ) maybe_shift_exp }
 
 maybe_shift_exp : maybe_additive_exp { ( LS | RS ) maybe_additive_exp }
 
@@ -85,19 +84,17 @@ maybe_mult_exp : unary_exp rest_of_maybe_mult_exp
 
 rest_of_maybe_mult_exp : { ( '*' | '/' | '%' ) unary_exp }  /* could be empty ! */
 
-unary_exp :   sign { sign } signed_unary_exp
-            | unsigned_unary_exp
-            | ( PP | MM ) Identifier [ '[' expression ']' ]
+unary_exp : sign { sign } signed_unary_exp
+          | unsigned_unary_exp
+          | ( PP | MM ) Identifier [ '[' expression ']' ]
 
-signed_unary_exp : Identifier [ '(' [ actual_parameter_list ] ')' | '[' expression ']' [ ( PP | MM ) ] |( PP | MM ) ]
+signed_unary_exp : Identifier [ '(' [ actual_parameter_list ] ')' |'[' expression ']' ]
                   | Constant 
                   | '(' expression ')'
 
-
-unsigned_unary_exp  :   Identifier [ '(' [ actual_parameter_list ] ')' | [ '[' expression ']' ] [ ( PP | MM ) ] ]
-                      | Constant 
-                      | '(' expression ')'
-
+unsigned_unary_exp : Identifier [ '(' [ actual_parameter_list ] ')' | [ '[' expression ']' ] [ ( PP | MM ) ] ]
+                    | Constant 
+                    | '(' expression ')'
 
 
 
@@ -108,7 +105,7 @@ unsigned_unary_exp  :   Identifier [ '(' [ actual_parameter_list ] ')' | [ '[' e
 %token  FLOAT   // float
 %token  CHAR    // char
 %token  BOOL    // bool
-%token  STRING  // string  注意全小寫！
+%token  STRING  // string <----------- 注意全小寫！
 %token  VOID    // void
 %token  IF      // if
 %token  ELSE    // else
@@ -144,7 +141,6 @@ unsigned_unary_exp  :   Identifier [ '(' [ actual_parameter_list ] ')' | [ '[' e
 %token  TE      // *= 
 %token  DE      // /= 
 %token  RE      // %= 
-%token  EE      // ^= 
 %token  PP      // ++ 
 %token  MM      // -- 
 %token  RS      // >> 
@@ -155,8 +151,7 @@ unsigned_unary_exp  :   Identifier [ '(' [ actual_parameter_list ] ')' | [ '[' e
 %token  ':'
 
 /* 
- * precedence (lower ones are given higher precedence)
- * and associativity
+ * (僅供參考) precedence (lower ones are given higher precedence) and associativity
  */
 
 %left   ','
@@ -169,8 +164,7 @@ unsigned_unary_exp  :   Identifier [ '(' [ actual_parameter_list ] ')' | [ '[' e
 %left   '&'
 %left   EQ NEQ
 %left   '<' '>' GE LE
-%left   '+' '-' '!'
+%left   '+' '-'
 %left   '*' '/' '%'
-%right  PP MM
-
-%%  // the syntactical part in EBNF
+%right  PP MM sign       // sign is '+' or '-' or '!'
+%%  // the syntactical part (in EBNF)
